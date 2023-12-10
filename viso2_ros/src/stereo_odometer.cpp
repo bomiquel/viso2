@@ -123,7 +123,7 @@ public:
     // Control
     local_nh.param<double>("max_altitude", max_altitude_, 3.0);
 
-    altitude_sub_ = local_nh.subscribe("/altitude_control", 1, &StereoOdometer::altitudeCB, this);
+    // altitude_sub_ = local_nh.subscribe("/turbot/navigator/altitude_raw", 1, &StereoOdometer::altitudeCB, this);
 
     point_cloud_pub_ = local_nh.advertise<PointCloud>("point_cloud", 1);
     info_pub_ = local_nh.advertise<VisoInfo>("info", 1);
@@ -134,11 +134,11 @@ public:
 
 protected:
 
-  void altitudeCB(const sensor_msgs::RangeConstPtr &msg){
+  // void altitudeCB(const sensor_msgs::RangeConstPtr &msg){
 
-    altitude_ = msg->range;
+  //   altitude_ = msg->range;
 
-  }
+  // }
 
   void initOdometer(
       const sensor_msgs::CameraInfoConstPtr& l_info_msg,
@@ -220,7 +220,7 @@ protected:
 
     int32_t dims[] = {l_image_msg->width, l_image_msg->height, l_step};
 
-    if(altitude_ < max_altitude_){
+    // if(altitude_ < max_altitude_){
       // on first run or when odometer got lost, only feed the odometer with
       // images without retrieving data
       if (first_run_ || got_lost_)
@@ -406,7 +406,7 @@ protected:
         info_msg.vo_runtime = time_elapsed.toSec();
         info_pub_.publish(info_msg);
       }
-    }
+    // }
   }
 
   double computeFeatureFlow(

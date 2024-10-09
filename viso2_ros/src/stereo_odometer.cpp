@@ -119,7 +119,7 @@ public:
     // Control
     local_nh.param<double>("max_altitude", max_altitude_, 3.0);
 
-    altitude_sub_ = local_nh.subscribe("/turbot/navigator/altitude_raw", 1, &StereoOdometer::altitudeCB, this);
+    altitude_sub_ = local_nh.subscribe("/altitude_control", 1, &StereoOdometer::altitudeCB, this);
 
     point_cloud_pub_ = local_nh.advertise<PointCloud>("point_cloud", 1);
     info_pub_ = local_nh.advertise<VisoInfo>("info", 1);

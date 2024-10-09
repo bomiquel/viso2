@@ -15,7 +15,6 @@
 #include "odometer_base.h"
 #include "odometry_params.h"
 
-//BMNF
 using cv::Mat;
 
 namespace viso2_ros
@@ -66,11 +65,9 @@ private:
   int ref_frame_inlier_threshold_; // method 2. Change the reference frame if the number of inliers is low
   Matrix reference_motion_;
 
-  //BMNF: Altitude control
   ros::Subscriber altitude_sub_;
   float altitude_ = MAXFLOAT;
 
-  // BMNF: Parameter declaration
   // Version
   int detection_and_matching_version_;
   // Bucketing
@@ -105,7 +102,6 @@ public:
     local_nh.param("ref_frame_motion_threshold", ref_frame_motion_threshold_, 5.0);
     local_nh.param("ref_frame_inlier_threshold", ref_frame_inlier_threshold_, 150);
 
-    // BMNF: Parameter definition
     // Version
     local_nh.param<int>("detection_and_matching_version", detection_and_matching_version_, 0);
     // Bucketing
@@ -370,16 +366,11 @@ protected:
         if(!change_reference_frame_)
           ROS_DEBUG_STREAM("Changing reference frame");
 
-        // create and publish viso2 info msg
-        // ROS_INFO_STREAM("Feature detection elapsed time: " << vo_elapsed_time.feature_detection << std::endl <<
-        //                 "Feature matching elapsed time: " << vo_elapsed_time.feature_matching << std::endl <<
-        //                 "Motion estimation elapsed time: " << vo_elapsed_time.motion_estimation);
         VisoInfo info_msg;
         info_msg.header.stamp = l_image_msg->header.stamp;
         info_msg.got_lost = !success;
         info_msg.change_reference_frame = !change_reference_frame_;
         info_msg.num_matches = visual_odometer_->getNumberOfMatches();
-        // info_msg.num_inliers = visual_odometer_->getNumberOfInliers();
 
         if(visual_odometer_->getNumberOfMatches() != 0){
 

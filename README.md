@@ -9,23 +9,23 @@ The branch contains, like the others, the version for monocular and omnidirectio
 ### Citation:
 ```bash
 @article{Nordfeldt-Fiol2023,
-    author = {Nordfeldt-Fiol, Bo Miquel and Bonin-Font, Francisco and Oliver, Gabriel},
-    year = {2023},
-    month = {08},
-    title = {Evolving Real-time Stereo Odometry for AUV Navigation in Challenging Marine Environments},
-    volume = {108},
-    journal = {Journal of Intelligent & Robotic Systems},
-    doi = {10.1007/s10846-023-01932-0}
-}
+         author = {Nordfeldt-Fiol, Bo Miquel and Bonin-Font, Francisco and Oliver, Gabriel},
+         year = {2023},
+         month = {08},
+         title = {Evolving Real-time Stereo Odometry for AUV Navigation in Challenging Marine Environments},
+         volume = {108},
+         journal = {Journal of Intelligent & Robotic Systems},
+         doi = {10.1007/s10846-023-01932-0}
+        }
 ```
 
 ## Installation
 
-1. [Install][link_ros_melodic] ROS Melodic.
-2. [Install][link_opencv_contrib] Opencv-3.2.0 with Opencv-3.2.0_contrib. If there are any problems with libopencv_core.so.3.2 follow these [instructions][link_installation_error].
+1. [Install][link_ros_noetic] ROS Noetic.
+2. Install Opencv-4.2.0 with Opencv-4.2.0_contrib, you can follow [these][link_opencv_contrib] instructions but install the 4.2.0 version. If there are any problems with libopencv_core.so.4.2 follow these [instructions][link_installation_error].
 3. Download in a catkin workspace the viso2 repository from github.
-4. Change branch to melodic-new-feature-tracker.
-5. If it is necessary modify the CMakeList.txt to link correctly the libraries from Opencv-3.2.0_contrib.
+4. Change branch to noetic-new-feature-tracker.
+5. If it is necessary, modify the CMakeList.txt to link correctly the libraries from Opencv-4.2.0_contrib.
 6. Compile.
 
 ## User guide
@@ -50,6 +50,8 @@ The branch contains, like the others, the version for monocular and omnidirectio
 * `ransac_iters` - Number of RANSAC iterations for the minimization of the reprojection errors.
 
 #### Wrapper parameters
+* `queue_size` - Integer with the length of the ROS subscriber queue.
+* `approximate_sync` - Boolean to activate the approximate synchronisation of ROS topics. 
 * `odom_frame_id` - String with the name of the odom frame.
 * `sensor_frame_id` - String with the name of the camera frame.
 * `base_link_frame_id` - String with the name of the base link frame.
@@ -91,58 +93,58 @@ You can run the node using the following launch file (tests were performed with 
 
 ```bash
 <launch>
-    <!-- Image parameters -->
-    <arg name = "camera"                      default = "/stereo_down"/>
-    
-    <!-- Frame parameters -->
-    <arg name = "odom_frame_name"             default = "/odom"/>
-    <arg name = "sensor_frame_name"           default = "/robot_namespace/$(arg camera)/left_optical"/>
-    <arg name = "base_link_frame_name"        default = "/robot_namespace/base_link"/>
+    <!-- Camera parameters -->
+    <arg name = "camera_name"          default = "camera_name"/>
+
+    <!-- Robot parameters -->
+    <arg name = "robot_name"           default = "robot_name"/>
 
     <!-- Run the stereo image proc -->
-    <node ns = "$(arg camera)" pkg = "stereo_image_proc" type = "stereo_image_proc" name = "stereo_image_proc" />
+    <node ns = "$(arg camera_name)" pkg = "stereo_image_proc" type = "stereo_image_proc" name = "stereo_image_proc" />
 
     <!-- Viso2 -->
     <node pkg = "viso2_ros" type = "stereo_odometer" name = "stereo_odometer" output = "screen">
-        <remap from = "stereo"                              to = "$(arg camera)"/> <!-- Camera namespace -->
-        <remap from = "image"                               to = "image_rect"/>  <!-- Image type -->
-        <remap from = "/altitude_control"                   to = "/robot_namespace/altitude"/>
-        <param name = "nms_n"                               value = "3"/>
-        <param name = "nms_tau"                             value = "3"/>
-        <param name = "half_resolution"                     value = "0"/>
-        <param name = "match_binsize"                       value = "50"/>
-        <param name = "match_radius"                        value = "200"/>
-        <param name = "match_disp_tolerance"                value = "1"/>
-        <param name = "multi_stage"                         value = "1"/>
-        <param name = "refinement"                          value = "1"/>
-        <param name = "outlier_disp_tolerance"              value = "5"/>
-        <param name = "outlier_flow_tolerance"              value = "5"/>
-        <param name = "max_features"                        value = "2"/>
-        <param name = "bucket_width"                        value = "50"/>
-        <param name = "bucket_height"                       value = "50"/>
-        <param name = "inlier_threshold"                    value = "1"/>
-        <param name = "ransac_iters"                        value = "300"/>
+        <remap from = "stereo"                            to = "/$(arg camera_name)"/> <!-- Camera namespace -->
+        <remap from = "image"                             to = "image_rect"/>  <!-- Image type -->
+        <remap from = "/altitude_control"                 to = "/$(arg robot_name)/altitude_raw"/>
+        <param name = "nms_n"                             value = "3"/>
+        <param name = "nms_tau"                           value = "3"/>
+        <param name = "half_resolution"                   value = "0"/>
+        <param name = "match_binsize"                     value = "50"/>
+        <param name = "match_radius"                      value = "200"/>
+        <param name = "match_disp_tolerance"              value = "1"/>
+        <param name = "multi_stage"                       value = "1"/>
+        <param name = "refinement"                        value = "1"/>
+        <param name = "outlier_disp_tolerance"            value = "5"/>
+        <param name = "outlier_flow_tolerance"            value = "5"/>
+        <param name = "max_features"                      value = "2"/>
+        <param name = "bucket_width"                      value = "50"/>
+        <param name = "bucket_height"                     value = "50"/>
+        <param name = "inlier_threshold"                  value = "1"/>
+        <param name = "ransac_iters"                      value = "300"/>
 
-        <param name = "odom_frame_id"                       value = "/odom"/>
-        <param name = "sensor_frame_id"                     value = "/robot_namespace/$(arg camera)/left_optical"/>
-        <param name = "base_link_frame_id"                  value = "/robot_namespace/base_link"/>
+        <param name = "queue_size"                        value = "5"/>
+        <param name = "approximate_sync"                  value = "true"/>
+        <param name = "odom_frame_id"                     value = "/odom"/>
+        <param name = "sensor_frame_id"                   value = "/$(arg robot_name)/$(arg camera_name)/left_optical"/>
+        <param name = "base_link_frame_id"                value = "/$(arg robot_name)/base_link"/>
 
-        <param name = "detection_and_matching_version"      value = "0"/> <!-- 0=Original LIBVISO2, 1=SIFT-SIFT, 2=SURF-SIFT, 3=SURF-BRISK, 4=SURF-FREAK -->
-        <param name = "contrast_threshold_sift"             value = "0.03"/>
-        <param name = "edge_threshold_sift"                 value = "10"/>
-        <param name = "sigma_sift"                          value = "1.6"/>
-        <param name = "hessian_threshold_surf"              value = "500"/>
-        <param name = "n_octave_layers"                     value = "3"/>
-        <param name = "homography_reprojection_threshold"   value = "3"/>
-        <param name = "enable_bucketing"                    value = "true"/>
-        <param name = "max_altitude"                        value = "2.5"/>
-        <param name = "initial_translation_x"               value = "0.0"/>
-        <param name = "initial_translation_y"               value = "0.0"/>
-        <param name = "initial_translation_z"               value = "0.0"/>
-        <param name = "initial_rotation_x"                  value = "0.0"/>
-        <param name = "initial_rotation_y"                  value = "0.0"/>
-        <param name = "initial_rotation_z"                  value = "0.0"/>
-        <param name = "initial_rotation_w"                  value = "1.0"/>
+        <param name = "detection_and_matching_version"    value = "0"/> <!-- 0=Original LIBVISO2, 1=SIFT-SIFT, 2=SURF-SIFT, 3=SURF-BRISK, 4=SURF-FREAK -->
+        <param name = "contrast_threshold_sift"           value = "0.03"/>
+        <param name = "edge_threshold_sift"               value = "10"/>
+        <param name = "sigma_sift"                        value = "1.6"/>
+        <param name = "hessian_threshold_surf"            value = "500"/>
+        <param name = "n_octave_layers"                   value = "3"/>
+        <param name = "homography_reprojection_threshold" value = "3"/>
+        <param name = "enable_bucketing"                  value = "true"/>
+        <param name = "max_altitude"                      value = "2.5"/>
+        <param name = "initial_translation_x"             value = "0.0"/>
+        <param name = "initial_translation_y"             value = "0.0"/>
+        <param name = "initial_translation_z"             value = "0.0"/>
+        <param name = "initial_rotation_x"                value = "0.0"/>
+        <param name = "initial_rotation_y"                value = "0.0"/>
+        <param name = "initial_rotation_z"                value = "0.0"/>
+        <param name = "initial_rotation_w"                value = "1.0"/>
     </node>
 </launch>
 ```
@@ -153,6 +155,6 @@ This work is co-financed by the PID2020-115332RB-C33 by Ministerio de Ciencia e 
 
 [link_ros]: http://www.ros.org/
 [link_libviso2]: https://www.cvlibs.net/software/libviso/
-[link_ros_melodic]: http://wiki.ros.org/ROS/Installation
+[link_ros_noetic]: http://wiki.ros.org/noetic/Installation
 [link_opencv_contrib]: https://www.programmersought.com/article/83872474263/
 [link_installation_error]: https://github.com/cggos/DIPDemoQt/issues/1

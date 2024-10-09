@@ -3,8 +3,10 @@
 #include <ros/console.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Range.h>
+#include <sensor_msgs/Image.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
+#include <image_transport/subscriber_filter.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
 using namespace std;
@@ -13,7 +15,7 @@ double max_altitude_ ;
 string outfile_ ;
 
 
-void callback(const nav_msgs::Odometry::ConstPtr& map_msg, const sensor_msgs::Range::ConstPtr& altitude_msg)
+void callback(const nav_msgs::Odometry::ConstPtr& map_msg, const sensor_msgs::Image::ConstPtr& img_msg, const sensor_msgs::Range::ConstPtr& altitude_msg)
 {
     ROS_INFO("HELLO THERE") ;
 
@@ -22,7 +24,7 @@ void callback(const nav_msgs::Odometry::ConstPtr& map_msg, const sensor_msgs::Ra
         ros::Time timestamp = map_msg->header.stamp ;
         double tx = map_msg->pose.pose.position.x ;
         double ty = map_msg->pose.pose.position.y ;
-        double tz = map_msg->pose.pose.position.z ;
+        double tz = altitude_msg->range ;
         double qx = map_msg->pose.pose.orientation.x ;
         double qy = map_msg->pose.pose.orientation.y ;
         double qz = map_msg->pose.pose.orientation.z ;
@@ -52,31 +54,29 @@ int main(int argc, char** argv){
     ros::NodeHandle nh ;
     ros::NodeHandle nhp("~") ;
 
-    string map_topic, altitude_topic ;
-    nhp.param("map_topic", map_topic, string("")) ;
-    nhp.param("altitude_topic", altitude_topic, string("")) ;
     nhp.param("outfile", outfile_, string("")) ;
     nhp.param("max_altitude", max_altitude_, 3.5) ;
 
     ROS_INFO_STREAM("Initialized obtain_first_point "
                     "with the following parameters:" << endl <<
-                    "  map_topic = " << map_topic << endl <<
-                    "  altitude_topic = " << altitude_topic << endl <<
                     "  outfile = " << outfile_ << endl <<
                     "  max_altitude = " << max_altitude_            
                     );
 
+    image_transport::ImageTransport it(nh);
+    image_transport::SubscriberFilter image_sub;
     message_filters::Subscriber<nav_msgs::Odometry> map_sub;
     message_filters::Subscriber<sensor_msgs::Range> altitude_sub;
 
-    typedef message_filters::sync_policies::ApproximateTime<nav_msgs::Odometry, sensor_msgs::Range> SyncPolicy ;
+    typedef message_filters::sync_policies::ApproximateTime<nav_msgs::Odometry, sensor_msgs::Image, sensor_msgs::Range> SyncPolicy;
     typedef message_filters::Synchronizer<SyncPolicy> Sync;
-    boost::shared_ptr<Sync> sync ;
-    map_sub.subscribe(nh, map_topic, 5) ;
-    altitude_sub.subscribe(nh, altitude_topic, 5) ;
 
-    sync.reset(new Sync(SyncPolicy(20), map_sub, altitude_sub)) ;
-    sync->registerCallback(bind(&callback, _1, _2)) ;
+    boost::shared_ptr<Sync> sync ;
+    map_sub     .subscribe(nh, "odom", 1);
+    image_sub   .subscribe(it, "image", 1);
+    altitude_sub.subscribe(nh, "altitude", 1);
+    sync.reset(new Sync(SyncPolicy(20), map_sub, image_sub, altitude_sub)) ;
+    sync->registerCallback(bind(&callback, _1, _2, _3)) ;
 
     ros::spin() ;
     ros::shutdown();

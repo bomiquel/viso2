@@ -88,7 +88,7 @@ protected:
     }
 
     // run the odometer
-    int32_t dims[] = {image_msg->width, image_msg->height, step};
+    int32_t dims[] = {(int32_t)image_msg->width, (int32_t)image_msg->height, step};
     // on first run, only feed the odometer with first image pair without
     // retrieving data
     if (first_run)

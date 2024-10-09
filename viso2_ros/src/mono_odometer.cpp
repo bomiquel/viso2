@@ -100,8 +100,10 @@ protected:
       step = cv_ptr->image.step[0];
     }
 
-    int32_t dims[] = {image_msg->width, image_msg->height, step};
-  
+    // run the odometer
+    int32_t dims[] = {(int32_t)image_msg->width, (int32_t)image_msg->height, step};
+    // on first run, only feed the odometer with first image pair without
+    // retrieving data
     if (first_run)
     { // fbf 22/07/2020 pass the cameraHeight from the continuously obtained topic given by the altitude estimator 
       visual_odometer_->process(image_data, dims, vo_elapsed_time, cameraHeight, true); //cameraHeigh will update this value at every odometry calculation

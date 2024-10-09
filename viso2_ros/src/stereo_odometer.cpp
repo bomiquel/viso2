@@ -214,7 +214,7 @@ protected:
     ROS_ASSERT(l_image_msg->width == r_image_msg->width);
     ROS_ASSERT(l_image_msg->height == r_image_msg->height);
 
-    int32_t dims[] = {l_image_msg->width, l_image_msg->height, l_step};
+    int32_t dims[] = {(int32_t)l_image_msg->width, (int32_t)l_image_msg->height, l_step};
 
     if(altitude_ < max_altitude_){
       // on first run or when odometer got lost, only feed the odometer with

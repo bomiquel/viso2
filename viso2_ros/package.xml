@@ -8,8 +8,8 @@
   <url type="website">http://ros.org/wiki/viso2_ros</url>
   <url type="bugtracker">https://github.com/srv/viso2/issues</url>
 
-  <author email="stephan.wirth@uib.es">Stephan Wirth</author>
-  <maintainer email="stephan.wirth@uib.es">Stephan Wirth</maintainer>
+  <author email="bo-miquel.nordfeldt@uib.eu">Bo Miquel</author>
+  <maintainer email="bo-miquel.nordfeldt@uib.eu">Bo Miquel</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
 

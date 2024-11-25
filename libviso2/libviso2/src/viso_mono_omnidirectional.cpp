@@ -34,10 +34,10 @@ bool VisualOdometryMonoOmnidirectional::process (uint8_t *I, int32_t* dims, bool
   matcher->matchFeatures(0);
   matcher->bucketFeatures(param.bucket.max_features,param.bucket.bucket_width,param.bucket.bucket_height);                          
   p_matched = matcher->getMatches();
-  return updateMotion(0.0, false);
+  return updateMotion();
 }
 
-std::vector<double> VisualOdometryMonoOmnidirectional::estimateMotion (std::vector<Matcher::p_match> p_matched,double cameraHeight, bool mono_odometry)
+std::vector<double> VisualOdometryMonoOmnidirectional::estimateMotion (std::vector<Matcher::p_match> p_matched)
 {
   uint32_t N = p_matched.size();
   if (N<10)

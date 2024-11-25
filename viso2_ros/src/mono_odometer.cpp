@@ -4,14 +4,13 @@
 #include <image_transport/camera_subscriber.h>
 #include <image_transport/image_transport.h>
 #include <image_geometry/pinhole_camera_model.h>
-#include <sensor_msgs/Range.h>
 
 #include <viso_mono.h>
 
 #include <viso2_ros/VisoInfo.h>
 
 #include "odometer_base.h"
-#include "odometry_params.h" // charge the NodeHandle params comming from launch file
+#include "odometry_params.h"
 
 namespace viso2_ros
 {
@@ -25,12 +24,10 @@ private:
   VisualOdometryMono::parameters visual_odometer_params_;
 
   image_transport::CameraSubscriber camera_sub_;
-  ros::Subscriber altitude_sub; // subscriber to the altitude message
 
   ros::Publisher info_pub_;
 
   bool replace_;
-  double cameraHeight;
 
 public:
 
@@ -43,23 +40,11 @@ public:
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
     camera_sub_ = it.subscribeCamera("image", 1, &MonoOdometer::imageCallback, this, transport);
-    /*subscriber to altitude topic*/
-    altitude_sub = nh.subscribe("altitude", 2, &MonoOdometer::altitudeCallback, this);
 
     info_pub_ = local_nh.advertise<VisoInfo>("info", 1);
-
-
   }
 
 protected:
-
-  void altitudeCallback (const sensor_msgs::RangeConstPtr& altitudemsg)
-    {
-        cameraHeight= altitudemsg->range;
-        ROS_INFO_STREAM("camera height " << cameraHeight);
-
-    }
-
 
   void imageCallback(
       const sensor_msgs::ImageConstPtr& image_msg,
@@ -107,15 +92,15 @@ protected:
     // on first run, only feed the odometer with first image pair without
     // retrieving data
     if (first_run)
-    { // fbf 22/07/2020 pass the cameraHeight from the continuously obtained topic given by the altitude estimator 
-      visual_odometer_->process(image_data, dims,cameraHeight,true); //cameraHeigh will update this value at every odometry calculation
+    {
+      visual_odometer_->process(image_data, dims);
       tf::Transform delta_transform;
       delta_transform.setIdentity();
       integrateAndPublish(delta_transform, image_msg->header.stamp);
     }
     else
     {
-      bool success = visual_odometer_->process(image_data, dims,cameraHeight,true);
+      bool success = visual_odometer_->process(image_data, dims);
       if(success)
       {
         replace_ = false;
